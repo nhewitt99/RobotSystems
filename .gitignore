@@ -1,0 +1,11 @@
+__pycache__/
+.so
+
+# Packaging
+build/
+eggs
+.eggs/
+*.egg-info/
+lib/
+lib64/
+

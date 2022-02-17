@@ -377,7 +377,7 @@ def run(img):
         for i in color_range:
             # TODO: this is silly isn't there only one target color at a time?
             if i in __target_color:
-                detect_color = i
+                detect_color = i  # TODO: this means that only the last color in the tuple is ever selected
                 frame_mask = cv2.inRange(
                     frame_lab,
                     color_range[detect_color][0],

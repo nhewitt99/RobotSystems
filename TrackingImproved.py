@@ -24,7 +24,7 @@ range_rgb = {
 }
 
 
-class Detector:
+class BoxDetector:
     def __init__(self):
         """
         TODO: there's all sorts of parameters in the various

@@ -210,6 +210,7 @@ def move():
                 if track:  # Tracking phase
                     if not __isRunning:
                         continue
+                    # Go to desired x, y, at height 5, try to reset pitch
                     AK.setPitchRangeMoving((world_x, world_y - 2, 5), -90, -90, 0, 20)
                     time.sleep(0.02)
                     track = False

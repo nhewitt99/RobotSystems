@@ -3,15 +3,17 @@ import sys
 sys.path.append("/home/pi/ArmPi")
 
 import cv2
-import time
 import Camera
 import threading
+from time import sleep
 
 from LABConfig import *
 from ArmIK.Transform import *
 from ArmIK.ArmMoveIK import *
 from CameraCalibration.CalibrationConfig import *
-from HiwonderSDK.Board import Board
+import HiwonderSDK.Board as Board
+
+DEBUG = False
 
 DEFAULT_COORDS = {
     "red": (-14.5, 11.5, 1.5),
@@ -63,34 +65,37 @@ class BoxMover:
             if obj.stop_event.is_set():
                 raise StopError("The stop flag has been raised!")
             else:
+                if DEBUG:
+                    print(f, args)
+                    input()
                 return f(*args)
 
         return wrapper
 
     @_check_stop
-    def _move_arm(self, x, y, z):
+    def _move_arm(self, x, y, z, delay=None):
         """
         Exactly what it says on the label. Return True on success.
         """
         self.x, self.y, self.z = x, y, z  # keep track of current position
 
         # Set pitch as close to -90 as possible
-        ret = self.AK.setPitchRangeMoving((x, y, z), -90, -90, 0)
+        ret = self.AK.setPitchRangeMoving((x, y, z), -90, -90, 0, 1500)
         ret = ret is not False  # convert from *stuff/False to True/False
 
         sleep(self.delay if delay is None else delay)
         return ret
 
     @_check_stop
-    def _set_gripper(self, val_str):
+    def _set_gripper(self, val_str, delay=None):
         """
         Open or close the gripper (servo 1) based on
         val_str
         """
         assert isinstance(val_str, str)
-        if val_str.lower in ("open", "opened"):
+        if val_str.lower() in ("open", "opened"):
             Board.setBusServoPulse(1, 300, 500)
-        elif val_str.lower in ("close", "closed"):
+        elif val_str.lower() in ("close", "closed"):
             Board.setBusServoPulse(1, 500, 500)
         else:
             raise ValueError
@@ -115,10 +120,10 @@ class BoxMover:
         return self._move_arm(0, 10, 12)
 
     def _raise_arm(self, z=12):
-        return self._move_arm(self, self.x, self.y, z)
+        return self._move_arm(self.x, self.y, z)
 
     def _lower_arm(self, z=2):
-        return self._move_arm(self, self.x, self.y, z)
+        return self._move_arm(self.x, self.y, z)
 
     def grab_box(self, x, y, theta):
         """
@@ -181,3 +186,4 @@ if __name__ == "__main__":
         print("Ending by user.")
     except StopError:
         print("Stopping!")
+

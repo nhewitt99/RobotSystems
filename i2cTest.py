@@ -1,5 +1,9 @@
+import sys
+sys.path.append('/home/pi/ArmPi')
+
 from MoveImproved import BoxMover
 from ArmIK.Transform import convertCoordinate
+from RemoteController import RemoteController, JoystickController
 
 from smbus import SMBus
 import time
@@ -14,18 +18,28 @@ def main():
     stop_event = threading.Event()
     mover = BoxMover(stop_event)
 
-    i2cbus = SMBus(1)
+#    i2cbus = SMBus(1)
+#    rc = RemoteController()
+    rc = JoystickController()
+    rc.gain = 0.2
+    rc.max_r = 35
 
     while True:
-        in_val = i2cbus.read_i2c_block_data(ADDRESS,0)[0]
-        out_val = range_to_range(in_val, in_range, out_range)
+        (x, y, z), theta, grip = rc.read()
 
-        print(f'{in_val} --> {out_val}')
+#        x, y = convertCoordinate(x, y, (640, 480))
+#        x, y = convertCoordinate(320, 240, (640, 480))
 
-        x, y = convertCoordinate(out_val, 240, (640, 480))
-
-        mover._move_arm(x, y, 10)
-        time.sleep(0.2)
+        print(f'{x:.2f}, {y:.2f}, {z:.2f}, {int(theta)}, {grip}')
+        mover._set_gripper('close' if grip else 'open')
+        mover._set_wrist_manual(theta)
+        ret = mover._move_arm(x, y, z)
+        if ret is False:
+            print('Bad position!')
+            delay = 0.25
+        else:
+            delay = ret[2] / 2000.0
+#        time.sleep(delay)
 
 def range_to_range(val, range1, range2):
     d1 = range1[1] - range1[0]

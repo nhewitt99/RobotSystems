@@ -80,8 +80,9 @@ class BoxMover:
         self.x, self.y, self.z = x, y, z  # keep track of current position
 
         # Set pitch as close to -90 as possible
-        ret = self.AK.setPitchRangeMoving((x, y, z), -90, -90, 0, 1500)
-        ret = ret is not False  # convert from *stuff/False to True/False
+        ret = self.AK.setPitchRangeMoving((x, y, z), -90, -90, 0)
+#        ret = self.AK.setPitchRangeMoving((x, y, z), -90, -90, 0, 1500)
+#        ret = ret is not False  # convert from *stuff/False to True/False
 
         sleep(self.delay if delay is None else delay)
         return ret
@@ -112,6 +113,12 @@ class BoxMover:
         servo2_angle = getAngle(x, y, theta)
         Board.setBusServoPulse(2, servo2_angle, 500)
 
+        sleep(self.delay if delay is None else delay)
+
+    @_check_stop
+    def _set_wrist_manual(self, theta, delay=None):
+        Board.setBusServoPulse(2, int(theta), 500)
+#        Board.setPWMServoAngle(2, theta)
         sleep(self.delay if delay is None else delay)
 
     def _init_move(self):
